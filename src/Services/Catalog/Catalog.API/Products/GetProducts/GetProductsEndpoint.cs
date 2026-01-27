@@ -2,17 +2,18 @@
 
 namespace Catalog.API.Products.GetProducts;
 
+public record GetProductsRequest(int? PageNumber = 1, int? PageSize = 10);
 public record GetProductsResponse(IEnumerable<Product> Products);
 public class GetProductsEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/products", async (ISender sender, CancellationToken cancellationToken) =>
-        {
-            var result = await sender.Send(new GetProductsQuery());
-            var response = result.Adapt<GetProductsResponse>();
-            return Results.Ok(response);
-        })
+        app.MapGet("/products", async ([AsParameters] GetProductsRequest request, ISender sender, CancellationToken cancellationToken) =>
+            {
+                var result = await sender.Send(request.Adapt<GetProductsQuery>(), cancellationToken);
+                var response = result.Adapt<GetProductsResponse>();
+                return Results.Ok(response);
+            })
         .WithName("GetProducts")
         .Produces<GetProductsResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
