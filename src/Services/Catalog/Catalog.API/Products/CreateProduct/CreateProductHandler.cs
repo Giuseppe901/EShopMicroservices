@@ -28,7 +28,6 @@ internal class CreateProductCommandHandler(IDocumentSession session)
         CreateProductCommand command, 
         CancellationToken cancellationToken)
     {
-        
         var product = new Product
         {
             Category = command.Category,
