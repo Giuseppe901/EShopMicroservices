@@ -1,6 +1,26 @@
-﻿namespace Catalog.API.Products.UpdateProduct
+﻿using Remotion.Linq.Clauses.ResultOperators;
+
+namespace Catalog.API.Products.UpdateProduct;
+public record UpdateProductRequest(Guid Id, string Name, List<string> Category, string Description, string ImageFile, decimal Price) : ICommand<UpdateProductResult>;
+
+public record UpdateProductResponse(bool IsSuccess);
+public class UpdateProductEndpoint : ICarterModule
 {
-    public class UpdateProductEndpoint
+    public void AddRoutes(IEndpointRouteBuilder app)
     {
+        app.MapPut("/products", async (UpdateProductRequest request, ISender sender, CancellationToken cancellationToken) =>
+        {
+            var command = request.Adapt<UpdateProductCommand>();
+            var result = await sender.Send(command, cancellationToken);
+            var response = result.Adapt<UpdateProductResponse>();
+
+            return Results.Ok(response);
+        })
+        .WithName("UpdateProduct")
+        .Produces<UpdateProductResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .WithSummary("Update Product")
+        .WithDescription("Update Product");
     }
 }
+
